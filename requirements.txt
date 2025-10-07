@@ -1,0 +1,51 @@
+# ===================================================================
+# Bio ANNa Python Dependencies
+#
+# This file lists all the Python packages required to run the project.
+# It can be installed using the command:
+#   pip install -r requirements.txt
+# ===================================================================
+
+# --- Core Scientific Computing and Data Handling ---
+# Used for numerical operations, array manipulation, and mathematical functions.
+numpy>=1.20.0
+
+# Provides advanced scientific and technical computing functions (e.g., filters, transforms).
+scipy>=1.7.0
+
+# Essential for data analysis, manipulation, and loading/saving datasets from field trials.
+pandas>=1.3.0
+
+# Used in the analysis notebooks for plotting results and visualizing data.
+matplotlib>=3.4.0
+
+
+# --- ROS 2 and Build System ---
+# The primary build tool for ROS 2 workspaces.
+colcon-common-extensions
+
+# A command-line tool for installing system dependencies for ROS packages.
+rosdep
+
+# A library for handling transformations in 3D space (e.g., robot poses).
+# Often installed with ROS, but listed here for explicitness.
+transforms3d
+
+
+# --- Neuromorphic Hardware SDK (Placeholders) ---
+# NOTE: The following packages are placeholders. The actual Intel Loihi SDKs
+# (like Lava) typically require a specific installation process and are not
+# available on the public PyPI repository. You must follow Intel's official
+# documentation to install these.
+#
+# lava
+# lava-nc
+# nengo-loihi
+
+
+# --- Optional: For Development and Analysis ---
+# An interactive computing environment for data analysis and visualization.
+jupyterlab
+
+# A linter to help maintain code quality.
+flake8

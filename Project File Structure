@@ -1,0 +1,35 @@
+bio_ANNa/
+├── Dockerfile
+├── README.md
+├── requirements.txt
+├── package.xml
+├── setup.py
+├── setup.cfg
+├── resource/
+│   └── bio_anna
+├── config/
+│   └── navigation_params.yaml
+├── launch/
+│   └── system.launch.py
+├── notebooks/
+│   ├── 1_data_analysis.ipynb
+│   └── 2_snn_visualization.ipynb
+├── src/
+│   └── bio_anna/
+│       ├── __init__.py
+│       ├── nodes/
+│       │   ├── __init__.py
+│       │   ├── antbot_snn_odometry_node.py
+│       │   ├── gridcore_snn_mapper_node.py
+│       │   ├── hardware_interface_node.py
+│       │   └── navigation_control_node.py
+│       └── utils/
+│           ├── __init__.py
+│           ├── bayesian_fusion_engine.py
+│           ├── loihi_interface.py
+│           └── math_utils.py
+├── datasets/
+│   └── (field data placeholder)
+├── build/        (generated)
+├── install/      (generated)
+└── log/          (generated)
