@@ -27,6 +27,8 @@ setup(
             'antbot_snn_odometry_node = bio_anna.nodes.antbot_snn_odometry_node:main',
             'gridcore_snn_mapper_node = bio_anna.nodes.gridcore_snn_mapper_node:main',
             'navigation_control_node = bio_anna.nodes.navigation_control_node:main',
+            'data_collection_node = bio_anna.nodes.data_collection_node:main',
+            'run_full_experiment = bio_anna.scripts.run_full_experiment:main',
         ],
     },
 )

@@ -20,6 +20,7 @@ bio_ANNa/
 │       ├── nodes/
 │       │   ├── __init__.py
 │       │   ├── antbot_snn_odometry_node.py
+│       │   ├── data_collection_node.py
 │       │   ├── gridcore_snn_mapper_node.py
 │       │   ├── hardware_interface_node.py
 │       │   └── navigation_control_node.py
@@ -28,6 +29,8 @@ bio_ANNa/
 │           ├── bayesian_fusion_engine.py
 │           ├── loihi_interface.py
 │           └── math_utils.py
+├── scripts/
+│   └── run_full_experiment.py
 ├── datasets/
 │   └── (field data placeholder)
 ├── build/        (generated)
