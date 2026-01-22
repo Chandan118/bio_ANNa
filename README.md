@@ -131,6 +131,22 @@ pip3 install -r requirements.txt
 
 ---
 
+### Build Requirements (Colcon)
+
+This project uses `colcon` for building. To ensure a successful build, you must have:
+- **ROS 2 Galactic** (installed on host or within Docker).
+- **Python 3.8+**.
+- **System Dependencies**: Installed via `rosdep install --from-paths src --ignore-src -r -y`.
+
+### Data Collection Requirements
+
+The [data_collection_node.py](file:///Users/chandansheikder/Documents/untitled%20folder%202/bio_ANNa_1/src/bio_anna/nodes/data_collection_node.py) is used to record experimental data.
+- **Output Directory**: Ensure the `datasets/` directory exists and has write permissions.
+- **Disk Space**: Large experiments can generate significant CSV data; ensure at least 1GB of free space is available.
+- **Python Packages**: `pandas` and `numpy` are strictly required for this node.
+
+---
+
 ## Nodes Overview
 
 | Node | Description | Key Topics |
@@ -150,11 +166,26 @@ pip3 install -r requirements.txt
 
 ---
 
-## Contributing
+## Contributing & Collaboration
 
-1. Fork and create a feature branch.
-2. Ensure `python3 -m compileall src/bio_anna` passes.
-3. Rebuild the container (`podman build …`) to confirm `colcon build` succeeds.
-4. Submit a pull request with a clear summary of changes.
+We welcome contributions! To ensure a smooth process for everyone, please:
+1.  Read our [CODE_OF_CONDUCT.md](file:///Users/chandansheikder/Documents/untitled%20folder%202/bio_ANNa_1/CODE_OF_CONDUCT.md) to understand our community standards.
+2.  Follow the guidelines in [CONTRIBUTING.md](file:///Users/chandansheikder/Documents/untitled%20folder%202/bio_ANNa_1/CONTRIBUTING.md).
+3.  Use our **Issue Templates** (Bug Report / Feature Request) when opening new issues.
+4.  Submit your changes using our **Pull Request Template** to ensure all necessary info is provided.
 
-MIT licensed – see `LICENSE` (or replace with project-specific license).
+If you use this work in your research, please cite us using the [CITATION.cff](file:///Users/chandansheikder/Documents/untitled%20folder%202/bio_ANNa_1/CITATION.cff) file or the "Cite this repository" button in the sidebar.
+
+---
+
+## Citation
+
+If you use this work in your research, please cite:
+
+**Sheikder, C. (2026). Bio ANNa: Autonomous Neuromorphic Navigation Architecture. *Cell Reports Physical Science*. [doi:10.2139/ssrn.5674916](http://dx.doi.org/10.2139/ssrn.5674916)**
+
+---
+
+## License
+
+MIT licensed – see [LICENSE](file:///Users/chandansheikder/Documents/untitled%20folder%202/bio_ANNa_1/LICENSE) for full details.

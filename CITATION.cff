@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Sheikder"
+  given-names: "Chandan"
+  orcid: "https://orcid.org/0000-0000-0000-0000" # Placeholder: Update with real ORCID if available
+title: "Bio ANNa: Autonomous Neuromorphic Navigation Architecture"
+version: 0.1.0
+date-released: 2025-11-24
+url: "https://github.com/Chandan118/bio_ANNa"
+keywords:
+  - "neuromorphic"
+  - "robotics"
+  - "navigation"
+  - "ROS 2"
+  - "spiking neural networks"
+  - "Loihi 2"
+abstract: >-
+  Bio ANNa translates desert-ant path integration and rodent cognitive mapping strategies 
+  into a modular ROS 2 stack designed for Intel's Loihi 2 neuromorphic hardware.
+identifiers:
+  - type: doi
+    value: 10.2139/ssrn.5674916
+    description: "Bio ANNa: Autonomous Neuromorphic Navigation Architecture"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Sheikder"
+    given-names: "Chandan"
+  title: "Bio ANNa: Autonomous Neuromorphic Navigation Architecture"
+  journal: "Cell Reports Physical Science"
+  doi: "10.2139/ssrn.5674916"
+  year: 2026
+repository-code: "https://github.com/Chandan118/bio_ANNa"
+license: MIT
