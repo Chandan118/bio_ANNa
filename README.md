@@ -183,7 +183,7 @@ If you use this work in your research, please cite us using the [CITATION.cff](f
 
 If you use this work in your research, please cite:
 
-**Sheikder, C. (2026). Bio ANNa: Autonomous Neuromorphic Navigation Architecture. *Cell Reports Physical Science*. [doi:10.2139/ssrn.5674916](http://dx.doi.org/10.2139/ssrn.5674916)**
+**Sheikder, C. (2026). Bio ANNa: Autonomous Neuromorphic Navigation Architecture. *Cell Reports Physical Science*. [doi:10.2139/ssrn.5674916](http://dx.doi.org/10.2139/ssrn.5674916), [doi:10.5281/zenodo.18512745](https://doi.org/10.5281/zenodo.18522121)**
 
 ---
 
