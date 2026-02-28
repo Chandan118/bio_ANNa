@@ -4,6 +4,7 @@
 ![ROS Version](https://img.shields.io/badge/ROS%202-Galactic-orange.svg)
 ![Platform](https://img.shields.io/badge/Platform-Intel%20Loihi%202-brightgreen.svg)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18512745.svg)](https://doi.org/10.5281/zenodo.18512745)
 
 Bio ANNa translates desert-ant path integration and rodent cognitive mapping strategies into a modular ROS 2 stack designed for Intel’s Loihi 2 neuromorphic hardware. The repository contains a full Python implementation with simulated Loihi interfaces so the system can be exercised on any machine before deploying to real hardware.
 
