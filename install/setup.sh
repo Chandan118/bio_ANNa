@@ -1,3 +1,10 @@
+# File        : setup.sh
+# Author      : Chandan Sheikder
+# Email       : chandan@bit.edu.cn
+# Phone       : +8618222390506
+# Affiliation : Beijing Institute of Technology (BIT)
+# Date        : 2026-03-23
+#
 # generated from colcon_core/shell/template/prefix_chain.sh.em
 
 # This script extends the environment with the environment of other prefix

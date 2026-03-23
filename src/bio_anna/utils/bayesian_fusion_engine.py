@@ -1,7 +1,19 @@
+"""
+bayesian_fusion_engine.py
+
+Author      : Chandan Sheikder
+Email       : chandan@bit.edu.cn
+Phone       : +8618222390506
+Affiliation : Beijing Institute of Technology (BIT)
+Date        : 2026-03-23
+
+Description:
+    Module for Bayesian Fusion Engine
+"""
+
 # ===================================================================
 # Bio ANNa - Bayesian Fusion Engine
 #
-# Author: chandan sheikder
 # Date: 07 oct 2025
 #
 # Description:
