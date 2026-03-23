@@ -1,7 +1,19 @@
+"""
+navigation_control_node.py
+
+Author      : Chandan Sheikder
+Email       : chandan@bit.edu.cn
+Phone       : +8618222390506
+Affiliation : Beijing Institute of Technology (BIT)
+Date        : 2026-03-23
+
+Description:
+    Module for Navigation Control Node
+"""
+
 # ===================================================================
 # Bio ANNa - Navigation Control Node
 #
-# Author: chndan sheikder
 # Date: 07 oct 2025
 #
 # Description:

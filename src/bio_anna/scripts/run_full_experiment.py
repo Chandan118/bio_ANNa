@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-Script to run a complete Bio ANNa experiment and collect all data needed for 
-supplemental materials (figures and tables).
+run_full_experiment.py
 
-This script will:
-1. Launch the Bio ANNa system
-2. Run a navigation experiment
-3. Collect all relevant data
-4. Generate the requested figures and tables
+Author      : Chandan Sheikder
+Email       : chandan@bit.edu.cn
+Phone       : +8618222390506
+Affiliation : Beijing Institute of Technology (BIT)
+Date        : 2026-03-23
+
+Description:
+    Script to run a complete Bio ANNa experiment and collect all data needed for
 """
 
 import rclpy
