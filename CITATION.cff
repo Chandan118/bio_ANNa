@@ -1,35 +1,28 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-authors:
-- family-names: "Sheikder"
-  given-names: "Chandan"
-  orcid: "https://orcid.org/0000-0003-1459-8747" # Placeholder: Update with real ORCID if available
+message: "If you use this software, please cite it using the metadata below."
+type: software
 title: "Bio ANNa: Autonomous Neuromorphic Navigation Architecture"
-version: 0.1.0
-date-released: 2025-11-24
-url: "https://github.com/Chandan118/bio_ANNa"
-keywords:
-  - "neuromorphic"
-  - "robotics"
-  - "navigation"
-  - "ROS 2"
-  - "spiking neural networks"
-  - "Loihi 2"
+version: "1.0.0"
+date-released: "2025-03-23"
+doi: "10.5281/zenodo.18512745"
 abstract: >-
-  Bio ANNa translates desert-ant path integration and rodent cognitive mapping strategies 
-  into a modular ROS 2 stack designed for Intel's Loihi 2 neuromorphic hardware.
-identifiers:
-  - type: doi
-    value: 10.2139/ssrn.5674916
-    description: "Bio ANNa: Autonomous Neuromorphic Navigation Architecture"
-preferred-citation:
-  type: article
-  authors:
-  - family-names: "Sheikder"
-    given-names: "Chandan"
-  title: "Bio ANNa: Autonomous Neuromorphic Navigation Architecture"
-  journal: "Cell Reports Physical Science"
-  doi: "10.2139/ssrn.5674916"
-  year: 2026
-repository-code: "https://github.com/Chandan118/bio_ANNa"
+  A ROS 2 stack implementing bio-inspired neuromorphic navigation using desert-ant path integration and rodent cognitive mapping, designed for Intel Loihi 2 neuromorphic hardware.
 license: MIT
+authors:
+  - family-names: Sheikder
+    given-names: Chandan
+    email: chandan@bit.edu.cn
+    affiliation: "Beijing Institute of Technology (BIT)"
+    orcid: "https://orcid.org/0000-0003-1459-8747"
+repository-code: "https://github.com/Chandan118/bio_ANNa"
+keywords:
+  - "neuromorphic computing"
+  - "Loihi 2"
+  - "ROS 2"
+  - "autonomous navigation"
+  - "spiking neural network"
+  - "bio-inspired"
+contact:
+  - name: Chandan Sheikder
+    email: chandan@bit.edu.cn
+    website: "https://chandan118.github.io"
