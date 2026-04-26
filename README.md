@@ -190,3 +190,5 @@ If you use this work in your research, please cite:
 ## License
 
 MIT licensed – see [LICENSE](file:///Users/chandansheikder/Documents/untitled%20folder%202/bio_ANNa_1/LICENSE) for full details.
+
+<!-- Supports amd64 and arm64 -->
