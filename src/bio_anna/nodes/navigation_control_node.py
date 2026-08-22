@@ -13,19 +13,7 @@ Description:
 
 # ===================================================================
 # Bio ANNa - Navigation Control Node
-#
 # Date: 07 oct 2025
-#
-# Description:
-# This is the central decision-making node for the ANNa system. It acts
-# as the "brain," performing three critical functions:
-# 1. State Estimation: It fuses the continuous odometry from the AntBot SNN
-#    with the absolute pose corrections from the GridCore SNN using a
-#    Bayesian Fusion Engine (Kalman Filter).
-# 2. Path Control: It subscribes to a goal pose and implements a simple
-#    proportional controller to navigate the robot towards that goal.
-# 3. State Publishing: It publishes the final, fused odometry and the
-#    authoritative tf transform for the rest of the ROS 2 system to use.
 # ===================================================================
 
 import rclpy
@@ -39,10 +27,12 @@ from nav_msgs.msg import Odometry
 
 from bio_anna.utils.bayesian_fusion_engine import BayesianFusionEngine
 
+
 class NavigationControlNode(Node):
     """
     The central control and state estimation node for the robot.
     """
+
     def __init__(self):
         super().__init__('navigation_control_node')
         self.get_logger().info('Initializing Navigation Control Node...')
@@ -54,12 +44,12 @@ class NavigationControlNode(Node):
                 ('odom_frame_id', 'odom'),
                 ('base_frame_id', 'base_link'),
                 ('control_frequency', 20.0),
-                ('goal_tolerance_dist', 0.2), # Meters
-                ('goal_tolerance_angle', 0.1), # Radians
-                ('max_linear_velocity', 0.5), # m/s
-                ('max_angular_velocity', 1.0), # rad/s
-                ('p_gain_linear', 0.8), # Proportional gain for linear velocity
-                ('p_gain_angular', 1.5) # Proportional gain for angular velocity
+                ('goal_tolerance_dist', 0.2),  # Meters
+                ('goal_tolerance_angle', 0.1),  # Radians
+                ('max_linear_velocity', 0.5),  # m/s
+                ('max_angular_velocity', 1.0),  # rad/s
+                ('p_gain_linear', 0.8),  # Proportional gain for linear velocity
+                ('p_gain_angular', 1.5)  # Proportional gain for angular velocity
             ])
 
         self.odom_frame = self.get_parameter('odom_frame_id').value
@@ -110,9 +100,10 @@ class NavigationControlNode(Node):
     def _goal_callback(self, msg: PoseStamped):
         """Receives a new navigation goal."""
         if msg.header.frame_id != self.odom_frame:
-            self.get_logger().error(f"Goal must be in '{self.odom_frame}' frame, but received in '{msg.header.frame_id}'")
+            self.get_logger().error(
+                f"Goal must be in '{self.odom_frame}' frame, but received in '{msg.header.frame_id}'")
             return
-        
+
         self.current_goal = msg
         self.goal_reached = False
         self.get_logger().info(f"New goal received: X={msg.pose.position.x:.2f}, Y={msg.pose.position.y:.2f}")
@@ -139,12 +130,12 @@ class NavigationControlNode(Node):
             pose_measurement, pose_cov = self._extract_gridcore_measurement(self.latest_gridcore_correction)
             self.fusion_engine.update_with_gridcore_correction(pose_measurement, pose_cov)
             self.latest_gridcore_correction = None
-        
+
         # Get the fused pose
-        fused_pose = self.fusion_engine.get_current_pose() # [x, y, theta]
+        fused_pose = self.fusion_engine.get_current_pose()  # [x, y, theta]
         # Get fused velocity for publishing
         # fused_velocity = self.fusion_engine.get_current_velocity()
-        
+
         # Publish the fused odometry and TF
         self._publish_fused_state(fused_pose)
 
@@ -186,7 +177,7 @@ class NavigationControlNode(Node):
         # Ensure commands do not exceed robot's physical limits
         linear_vel = np.clip(linear_vel, -self.max_linear_vel, self.max_linear_vel)
         angular_vel = np.clip(angular_vel, -self.max_angular_vel, self.max_angular_vel)
-        
+
         # Publish the final command
         self._publish_cmd_vel(linear_vel, angular_vel)
 
@@ -250,7 +241,7 @@ class NavigationControlNode(Node):
         t.transform.translation.y = pose[1]
         t.transform.rotation = odom_msg.pose.pose.orientation
         self.tf_broadcaster.sendTransform(t)
-        
+
     def _publish_cmd_vel(self, linear, angular):
         """Creates and publishes a Twist message."""
         cmd_vel_msg = Twist()
@@ -269,6 +260,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

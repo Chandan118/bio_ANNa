@@ -13,30 +13,12 @@ Description:
 
 # ===================================================================
 # Bio ANNa - Hardware Interface Node
-#
-# Date: o7 oct 2025
-#
-# Description:
-# This node serves as the direct interface to the robot's hardware base
-# and its core sensors (IMU, wheel encoders). It abstracts the low-level
-# communication protocol (e.g., serial, CAN bus) from the rest of the
-# ROS 2 system.
-#
-# Key Responsibilities:
-# 1. Subscribes to `/cmd_vel` to receive velocity commands from the
-#    navigation stack.
-# 2. Sends these commands to the robot's motor controllers.
-# 3. Reads sensor data (IMU, wheel velocities) from the hardware.
-# 4. Publishes this data onto standard ROS 2 topics (`/imu/data`,
-#    `/wheel_odometry/twist`).
-# 5. Includes a `use_simulation` mode for development and testing
-#    without a physical robot.
+# Date: 7 oct 2025
 # ===================================================================
 
 import rclpy
 from rclpy.node import Node
 import numpy as np
-import time
 
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Imu
@@ -46,10 +28,12 @@ from geometry_msgs.msg import TwistWithCovarianceStamped
 # In a real scenario, you might import something like:
 # import serial
 
+
 class HardwareInterfaceNode(Node):
     """
     ROS 2 Node for interfacing with the robot's physical hardware.
     """
+
     def __init__(self):
         super().__init__('hardware_interface_node')
         self.get_logger().info('Initializing Hardware Interface Node...')
@@ -57,7 +41,7 @@ class HardwareInterfaceNode(Node):
         # --- 1. Declare and Get ROS 2 Parameters ---
         self.declare_parameter('use_simulation', True)
         self.declare_parameter('update_frequency', 50.0)
-        self.declare_parameter('serial_port', '/dev/ttyACM0') # Example for real hardware
+        self.declare_parameter('serial_port', '/dev/ttyACM0')  # Example for real hardware
         self.declare_parameter('baud_rate', 115200)       # Example for real hardware
 
         self.use_simulation = self.get_parameter('use_simulation').value
@@ -79,7 +63,7 @@ class HardwareInterfaceNode(Node):
                 # self.get_logger().info('Successfully connected to hardware.')
                 # The line above is what you would uncomment and use with a real serial device.
                 self.get_logger().warn('Real hardware connection is commented out. Running with zero-output.')
-                pass # This is a placeholder
+                pass  # This is a placeholder
             except Exception as e:
                 self.get_logger().error(f'Failed to connect to hardware: {e}. Shutting down.')
                 # In a real application, you might want to retry or handle this more gracefully.
@@ -126,7 +110,7 @@ class HardwareInterfaceNode(Node):
         if imu_data:
             imu_msg = Imu()
             imu_msg.header.stamp = current_time
-            imu_msg.header.frame_id = 'imu_link' # A standard frame name
+            imu_msg.header.frame_id = 'imu_link'  # A standard frame name
             imu_msg.angular_velocity.z = imu_data['angular_velocity_z']
             imu_msg.linear_acceleration.x = imu_data['linear_acceleration_x']
             # ... populate other IMU fields (orientation, covariances)
@@ -146,7 +130,7 @@ class HardwareInterfaceNode(Node):
         # Add some noise to make it more realistic
         noise_factor_linear = 0.05
         noise_factor_angular = 0.02
-        
+
         # Simulated velocity is the command + noise
         sim_lv_noisy = self.sim_linear_vel + np.random.normal(0, noise_factor_linear)
         sim_av_noisy = self.sim_angular_vel + np.random.normal(0, noise_factor_angular)
@@ -154,9 +138,10 @@ class HardwareInterfaceNode(Node):
         # Simulated IMU data reflects the commanded motion
         imu_data = {
             'angular_velocity_z': sim_av_noisy,
-            'linear_acceleration_x': self.sim_linear_vel * self.update_freq # A very rough approximation of acceleration
+            # A very rough approximation of acceleration
+            'linear_acceleration_x': self.sim_linear_vel * self.update_freq
         }
-        
+
         return sim_lv_noisy, sim_av_noisy, imu_data
 
     def _read_from_robot_hardware(self):
@@ -177,7 +162,7 @@ class HardwareInterfaceNode(Node):
                 pass
             except Exception as e:
                 self.get_logger().error(f"Error reading from hardware: {e}")
-        
+
         # Return zeros if no data is available
         return 0.0, 0.0, None
 
@@ -214,6 +199,7 @@ def main(args=None):
         node.on_shutdown()
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

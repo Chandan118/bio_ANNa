@@ -13,17 +13,7 @@ Description:
 
 # ===================================================================
 # bio ANNa - AntBot SNN Odometry Node
-#
 # Date: 7 oct 2025
-#
-# Description:
-# This ROS 2 node implements the desert ant-inspired path integration
-# algorithm using a Spiking Neural Network (SNN) simulated to be
-# running on an Intel Loihi 2 chip. It subscribes to inertial (IMU)
-# and heading (Polarization Compass) sensor data, encodes this data
-# into spikes, processes it through the neuromorphic interface, decodes
-# the output spikes into motion, and publishes the resulting odometry
-# as both a nav_msgs/Odometry message and a tf2 transform.
 # ===================================================================
 
 import rclpy
@@ -34,16 +24,16 @@ import tf2_ros
 from geometry_msgs.msg import TwistWithCovarianceStamped, TransformStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
-from std_msgs.msg import Float32
-
 # Import the custom utility for interfacing with the (simulated) Loihi chip
 from bio_anna.utils.loihi_interface import Loihi2Interface
 from bio_anna.utils.math_utils import quaternion_from_yaw
+
 
 class AntBotSNNNode(Node):
     """
     ROS 2 Node for AntBot-inspired Path Integration.
     """
+
     def __init__(self):
         super().__init__('antbot_snn_odometry_node')
         self.get_logger().info('Initializing AntBot SNN Odometry Node...')
@@ -79,10 +69,10 @@ class AntBotSNNNode(Node):
 
         # --- 3. Initialize State Variables ---
         self.current_pose = np.zeros(3)  # [x, y, theta]
-        self.current_velocity = np.zeros(3) # [vx, vy, v_theta]
+        self.current_velocity = np.zeros(3)  # [vx, vy, v_theta]
         self.last_update_time = self.get_clock().now()
         self.latest_imu_wz = 0.0
-        self.latest_linear_velocity_x = 0.0 # Assuming forward velocity from wheel encoders or other source
+        self.latest_linear_velocity_x = 0.0  # Assuming forward velocity from wheel encoders or other source
 
         # --- 4. Setup ROS 2 Subscribers, Publishers, and TF Broadcaster ---
         self.imu_subscriber = self.create_subscription(
@@ -95,7 +85,7 @@ class AntBotSNNNode(Node):
         # Here we subscribe to a simple topic for demonstration.
         self.velocity_subscriber = self.create_subscription(
             TwistWithCovarianceStamped,
-            '/wheel_odometry/twist', # A more realistic topic
+            '/wheel_odometry/twist',  # A more realistic topic
             self.velocity_callback,
             10)
 
@@ -113,27 +103,25 @@ class AntBotSNNNode(Node):
     def velocity_callback(self, msg: TwistWithCovarianceStamped):
         """Stores the latest linear velocity from wheel odometry."""
         self.latest_linear_velocity_x = msg.twist.twist.linear.x
-        
+
     def encode_inputs_to_spikes(self, linear_vel_x, angular_vel_z):
         """
         Encodes continuous sensor values into a vector of spike rates.
         This uses Gaussian Receptive Fields (also called basis functions), a common
         and powerful encoding method. Each neuron fires most for a specific input value.
         """
-        # Define the preferred values for each neuron
-        neuron_indices = np.arange(self.num_neurons)
         # First half of neurons encode linear velocity, second half angular
         preferred_linear_vels = np.linspace(-1.0, 1.0, self.num_neurons // 2)
         preferred_angular_vels = np.linspace(-np.pi/2, np.pi/2, self.num_neurons // 2)
-        
+
         # Calculate spike rates for linear velocity neurons
         linear_distances = np.abs(preferred_linear_vels - linear_vel_x)
         linear_spikes = np.exp(-self.encoding_gain * linear_distances**2)
-        
+
         # Calculate spike rates for angular velocity neurons
         angular_distances = np.abs(preferred_angular_vels - angular_vel_z)
         angular_spikes = np.exp(-self.encoding_gain * angular_distances**2)
-        
+
         return np.concatenate([linear_spikes, angular_spikes])
 
     def decode_spikes_to_motion(self, output_spikes):
@@ -163,8 +151,8 @@ class AntBotSNNNode(Node):
             delta_angular = (center_of_mass_angular - len(angular_pop_spikes)/2) * self.angular_scaler
         else:
             delta_angular = 0.0
-            
-        return delta_linear, delta_angular # Returns delta_x and delta_theta
+
+        return delta_linear, delta_angular  # Returns delta_x and delta_theta
 
     def update_loop(self):
         """The main computational loop, executed at a fixed frequency."""
@@ -175,7 +163,7 @@ class AntBotSNNNode(Node):
 
         # 1. Encode sensor data into spikes
         input_spikes = self.encode_inputs_to_spikes(self.latest_linear_velocity_x, self.latest_imu_wz)
-        
+
         # 2. Process spikes through the neuromorphic hardware interface
         output_spikes = self.loihi_antbot_net.run_step(input_spikes)
 
@@ -191,12 +179,12 @@ class AntBotSNNNode(Node):
         self.current_pose[0] += dx
         self.current_pose[1] += dy
         self.current_pose[2] += dtheta
-        
+
         # Normalize angle to be within -pi to pi
         self.current_pose[2] = np.arctan2(np.sin(self.current_pose[2]), np.cos(self.current_pose[2]))
 
         # Store velocity for the odometry message
-        self.current_velocity = [delta_linear, 0.0, delta_angular] # [vx, vy, v_theta]
+        self.current_velocity = [delta_linear, 0.0, delta_angular]  # [vx, vy, v_theta]
 
         # 5. Publish Odometry message and TF transform
         self.publish_odometry(current_time)
@@ -214,7 +202,7 @@ class AntBotSNNNode(Node):
         # Set the position
         odom_msg.pose.pose.position.x = self.current_pose[0]
         odom_msg.pose.pose.position.y = self.current_pose[1]
-        
+
         # Convert yaw angle to quaternion
         qx, qy, qz, qw = quaternion_from_yaw(self.current_pose[2])
         odom_msg.pose.pose.orientation.x = qx
@@ -240,7 +228,7 @@ class AntBotSNNNode(Node):
 
         t.transform.translation.x = self.current_pose[0]
         t.transform.translation.y = self.current_pose[1]
-        t.transform.translation.z = 0.0 # Assuming 2D motion
+        t.transform.translation.z = 0.0  # Assuming 2D motion
 
         qx, qy, qz, qw = quaternion_from_yaw(self.current_pose[2])
         t.transform.rotation.x = qx
@@ -261,6 +249,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

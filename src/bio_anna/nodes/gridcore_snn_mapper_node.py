@@ -13,24 +13,7 @@ Description:
 
 # ===================================================================
 # Bio ANNa - GridCore SNN Mapper Node
-#
 # Date: 7 oct 2025
-#
-# Description:
-# This ROS 2 node implements the rodent-inspired cognitive mapping and
-# re-localization system. It simulates the function of the hippocampus
-# (place cells) and entorhinal cortex (grid cells) using a "GridCore" SNN.
-#
-# The node performs the following steps:
-# 1. Subscribes to 2D Laser Scan (LiDAR) data.
-# 2. Extracts salient landmarks (corners, edges) from the scan.
-# 3. Encodes landmark information into spikes.
-# 4. Processes spikes through the GridCore SNN (via the Loihi interface)
-#    to get a unique, stable neural representation of the landmark.
-# 5. Compares this representation against an internal "cognitive map".
-# 6. If a landmark is recognized, it calculates a pose correction and
-#    publishes it with high confidence to aid the main navigation filter.
-# 7. If a landmark is new, it adds it to the cognitive map.
 # ===================================================================
 
 import rclpy
@@ -39,14 +22,16 @@ import numpy as np
 
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovarianceStamped, Point
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from bio_anna.utils.loihi_interface import Loihi2Interface
 from bio_anna.utils.math_utils import quaternion_from_yaw, yaw_from_quaternion
+
 
 class GridCoreSNNNode(Node):
     """
     ROS 2 Node for rodent-inspired cognitive mapping.
     """
+
     def __init__(self):
         super().__init__('gridcore_snn_mapper_node')
         self.get_logger().info('Initializing GridCore SNN Mapper Node...')
@@ -57,11 +42,11 @@ class GridCoreSNNNode(Node):
             parameters=[
                 ('odom_frame_id', 'odom'),
                 ('base_frame_id', 'base_link'),
-                ('update_frequency', 2.0), # Mapping can be slower than odometry
-                ('landmark_detection_threshold', 0.5), # Meters, for corner detection
-                ('relocalization_confidence', 0.1), # Low covariance for high confidence
-                ('new_landmark_confidence', 99.0), # High covariance for low confidence
-                ('map_storage_resolution', 0.25), # Meters, for discretizing landmark signatures
+                ('update_frequency', 2.0),  # Mapping can be slower than odometry
+                ('landmark_detection_threshold', 0.5),  # Meters, for corner detection
+                ('relocalization_confidence', 0.1),  # Low covariance for high confidence
+                ('new_landmark_confidence', 99.0),  # High covariance for low confidence
+                ('map_storage_resolution', 0.25),  # Meters, for discretizing landmark signatures
                 ('snn.num_neurons', 128)
             ])
         self.odom_frame = self.get_parameter('odom_frame_id').value
@@ -97,7 +82,7 @@ class GridCoreSNNNode(Node):
         # Subscribes to the fused odometry to know the robot's current best guess
         self.odom_subscriber = self.create_subscription(
             Odometry,
-            '/odom/fused', # Assuming a fused odometry topic from the main navigator
+            '/odom/fused',  # Assuming a fused odometry topic from the main navigator
             self.odom_callback,
             10)
 
@@ -132,7 +117,7 @@ class GridCoreSNNNode(Node):
         for i in range(1, len(ranges) - 1):
             # Check for sudden jumps in range, indicating an edge
             is_discontinuous = abs(ranges[i-1] - ranges[i]) > self.landmark_thresh or \
-                               abs(ranges[i+1] - ranges[i]) > self.landmark_thresh
+                abs(ranges[i+1] - ranges[i]) > self.landmark_thresh
 
             if is_discontinuous and ranges[i] < scan.range_max:
                 angle = scan.angle_min + i * scan.angle_increment
@@ -150,7 +135,7 @@ class GridCoreSNNNode(Node):
         # Discretize the position to make it robust to small noises
         x_discrete = int(landmark_local_pos[0] / self.map_resolution)
         y_discrete = int(landmark_local_pos[1] / self.map_resolution)
-        
+
         # NOTE: A more complex signature would involve SNN processing.
         # Here we simulate the SNN's output as a discrete identifier.
         # Spikes would be encoded from landmark_local_pos, fed to Loihi,
@@ -187,16 +172,13 @@ class GridCoreSNNNode(Node):
                 # Get the global pose of the landmark from our map
                 lm_global_pose = self.cognitive_map[signature]
 
-                # From the landmark's global pose and its current local pose,
-                # we can calculate a corrected global pose for the robot.
-                # This is a coordinate frame transformation.
-                cos_th, sin_th = np.cos(lm_global_pose[2]), np.sin(lm_global_pose[2])
-                
                 # Transform local landmark position to global frame based on landmark's known orientation
                 # This is complex, so we simplify: assume orientation is also stored or derived.
                 # Here, we calculate where the robot *must be* to see the landmark at `lm_local`.
-                corrected_robot_x = lm_global_pose[0] - (lm_local[0] * np.cos(current_yaw) - lm_local[1] * np.sin(current_yaw))
-                corrected_robot_y = lm_global_pose[1] - (lm_local[0] * np.sin(current_yaw) + lm_local[1] * np.cos(current_yaw))
+                corrected_robot_x = lm_global_pose[0] - \
+                    (lm_local[0] * np.cos(current_yaw) - lm_local[1] * np.sin(current_yaw))
+                corrected_robot_y = lm_global_pose[1] - \
+                    (lm_local[0] * np.sin(current_yaw) + lm_local[1] * np.cos(current_yaw))
 
                 # For now, we trust the odom's yaw, but a more advanced system
                 # would correct yaw based on seeing multiple landmarks.
@@ -205,28 +187,31 @@ class GridCoreSNNNode(Node):
             else:
                 # --- NEW LANDMARK DISCOVERY ---
                 # Transform the landmark's local position to the global frame using current odometry
-                lm_global_x = current_robot_pose[0] + (lm_local[0] * np.cos(current_yaw) - lm_local[1] * np.sin(current_yaw))
-                lm_global_y = current_robot_pose[1] + (lm_local[0] * np.sin(current_yaw) + lm_local[1] * np.cos(current_yaw))
-                
+                lm_global_x = current_robot_pose[0] + \
+                    (lm_local[0] * np.cos(current_yaw) - lm_local[1] * np.sin(current_yaw))
+                lm_global_y = current_robot_pose[1] + \
+                    (lm_local[0] * np.sin(current_yaw) + lm_local[1] * np.cos(current_yaw))
+
                 # Store the new landmark in our map
                 # The stored "pose" of the landmark can just be its position for now.
                 self.cognitive_map[signature] = np.array([lm_global_x, lm_global_y, current_yaw])
-        
+
         if num_recalcs > 0:
             self.get_logger().info(f'Re-localized based on {num_recalcs} recognized landmarks.')
         else:
-             self.get_logger().info(f'Explored new area. Added {len(landmarks)} landmarks to cognitive map (total: {len(self.cognitive_map)}).')
-
+            self.get_logger().info(
+                f'Explored new area. Added {len(landmarks)} landmarks '
+                f'to cognitive map (total: {len(self.cognitive_map)}).')
 
     def publish_correction(self, pose, covariance):
         """Publishes a pose correction with a given confidence."""
         correction_msg = PoseWithCovarianceStamped()
         correction_msg.header.stamp = self.get_clock().now().to_msg()
         correction_msg.header.frame_id = self.odom_frame
-        
+
         correction_msg.pose.pose.position.x = pose[0]
         correction_msg.pose.pose.position.y = pose[1]
-        
+
         qx, qy, qz, qw = quaternion_from_yaw(pose[2])
         correction_msg.pose.pose.orientation.x = qx
         correction_msg.pose.pose.orientation.y = qy
@@ -236,7 +221,7 @@ class GridCoreSNNNode(Node):
         # A 6x6 covariance matrix. Low values on the diagonal mean high confidence.
         correction_msg.pose.covariance[0] = covariance  # x variance
         correction_msg.pose.covariance[7] = covariance  # y variance
-        correction_msg.pose.covariance[35] = covariance * 2 # Slightly less confidence in yaw
+        correction_msg.pose.covariance[35] = covariance * 2  # Slightly less confidence in yaw
 
         self.correction_publisher.publish(correction_msg)
 
@@ -251,6 +236,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

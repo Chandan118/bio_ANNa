@@ -13,33 +13,19 @@ Description:
 
 # ===================================================================
 # Bio ANNa - Bayesian Fusion Engine
-#
 # Date: 07 oct 2025
-#
-# Description:
-# This module contains the core state estimation logic for Project ANNa.
-# It implements an Extended Kalman Filter (EKF) to fuse asynchronous
-# measurements from the AntBot SNN (velocity) and the GridCore SNN
-# (absolute pose corrections).
-#
-# The EKF maintains an estimate of the robot's state and its uncertainty,
-# continuously refining it as new sensor data arrives.
-#
-# State Vector (x): [x, y, theta, v, w]
-#   - x, y: Global position in the odom frame
-#   - theta: Orientation (yaw) in the odom frame
-#   - v: Forward linear velocity
-#   - w: Angular velocity (yaw rate)
 # ===================================================================
 
 from typing import Optional
 
 import numpy as np
 
+
 class BayesianFusionEngine:
     """
     Implements an Extended Kalman Filter to fuse odometry and pose correction data.
     """
+
     def __init__(
         self,
         initial_state=None,
@@ -78,7 +64,7 @@ class BayesianFusionEngine:
         self.P = initial_covariance.reshape(5, 5)
         if self.P.shape != (5, 5):
             raise ValueError("Initial covariance must be 5x5 or derived from 5 variances.")
-        
+
         # Process noise covariance matrix (Q)
         # Represents uncertainty in our motion model (e.g., wheel slip, uneven ground).
         process_noise_variances = np.asarray(process_noise_variances, dtype=float)
@@ -88,7 +74,7 @@ class BayesianFusionEngine:
             self.Q = np.diag(process_noise_variances)
         if self.Q.shape != (5, 5):
             raise ValueError("Process noise matrix must be 5x5 or derived from 5 variances.")
-        
+
         # Measurement noise covariance matrices (R)
         # Represents how much we trust our sensors.
         antbot_noise_variances = np.asarray(antbot_noise_variances, dtype=float)
@@ -118,7 +104,7 @@ class BayesianFusionEngine:
         """
         # --- 1. Project the state forward ---
         x, y, theta, v, w = self.x.flatten()
-        
+
         # Non-linear motion model:
         # If angular velocity is very small, motion is linear
         if abs(w) < 1e-6:
@@ -128,13 +114,13 @@ class BayesianFusionEngine:
             # Otherwise, motion is an arc
             radius = v / w
             dx = radius * (-np.sin(theta) + np.sin(theta + w * dt))
-            dy = radius * ( np.cos(theta) - np.cos(theta + w * dt))
-            
+            dy = radius * (np.cos(theta) - np.cos(theta + w * dt))
+
         self.x[0] += dx
         self.x[1] += dy
         self.x[2] += w * dt
         # Velocities are assumed to persist unless updated by a measurement
-        
+
         self.x[2] = self._normalize_angle(self.x[2])
 
         # --- 2. Calculate the Jacobian of the motion model (F) ---
@@ -145,7 +131,7 @@ class BayesianFusionEngine:
         F[1, 2] = v * np.cos(theta) * dt
         F[1, 3] = np.sin(theta) * dt
         F[2, 4] = dt
-        
+
         # --- 3. Project the covariance forward ---
         # P = F * P * F^T + Q
         self.P = F @ self.P @ F.T + self.Q
@@ -158,7 +144,7 @@ class BayesianFusionEngine:
             measurement_covariance (np.array, optional): Optional 2x2 covariance matrix.
         """
         measurement = measurement.reshape(2, 1)
-        
+
         # --- 1. Define the measurement model Jacobian (H) ---
         # H maps the state space to the measurement space.
         # We are measuring v and w, which are the 4th and 5th elements of the state.
@@ -166,12 +152,15 @@ class BayesianFusionEngine:
             [0, 0, 0, 1, 0],
             [0, 0, 0, 0, 1]
         ])
-        
+
         # --- 2. Perform the Kalman Update ---
-        R = self.R_antbot if measurement_covariance is None else np.asarray(measurement_covariance, dtype=float).reshape(2, 2)
+        R = self.R_antbot if measurement_covariance is None else np.asarray(
+            measurement_covariance, dtype=float).reshape(2, 2)
         self._perform_update(measurement, H, R)
 
-    def update_with_gridcore_correction(self, measurement: np.ndarray, measurement_covariance: Optional[np.ndarray] = None):
+    def update_with_gridcore_correction(
+        self, measurement: np.ndarray, measurement_covariance: Optional[np.ndarray] = None
+    ):
         """
         EKF Update Step for an absolute pose measurement from the GridCore SNN.
         Args:
@@ -179,7 +168,7 @@ class BayesianFusionEngine:
             measurement_covariance (np.array, optional): Optional 3x3 covariance matrix.
         """
         measurement = measurement.reshape(3, 1)
-        
+
         # --- 1. Define the measurement model Jacobian (H) ---
         # We are measuring x, y, and theta, the first 3 elements of the state.
         H = np.array([
@@ -187,11 +176,12 @@ class BayesianFusionEngine:
             [0, 1, 0, 0, 0],
             [0, 0, 1, 0, 0]
         ])
-        
+
         # --- 2. Perform the Kalman Update ---
         # Note: A more advanced version could use the covariance from the
         #       GridCore message to dynamically set R_gridcore here.
-        R = self.R_gridcore if measurement_covariance is None else np.asarray(measurement_covariance, dtype=float).reshape(3, 3)
+        R = self.R_gridcore if measurement_covariance is None else np.asarray(
+            measurement_covariance, dtype=float).reshape(3, 3)
         self._perform_update(measurement, H, R)
 
     def _perform_update(self, z, H, R):
@@ -207,26 +197,26 @@ class BayesianFusionEngine:
         # The residual for the angle needs special handling (normalization)
         z_predicted = H @ self.x
         y = z - z_predicted
-        if H.shape[0] == 3: # If this is a pose update
+        if H.shape[0] == 3:  # If this is a pose update
             y[2] = self._normalize_angle(y[2])
-        
+
         # --- 2. Calculate the residual covariance (S) ---
         # S = H * P * H^T + R
         S = H @ self.P @ H.T + R
-        
+
         # --- 3. Calculate the Kalman Gain (K) ---
         # K = P * H^T * S^-1
         K = self.P @ H.T @ np.linalg.inv(S)
-        
+
         # --- 4. Update the state estimate ---
         # x = x + K * y
         self.x = self.x + K @ y
         self.x[2] = self._normalize_angle(self.x[2])
-        
+
         # --- 5. Update the state covariance ---
         # P = (I - K * H) * P
-        I = np.eye(5)
-        self.P = (I - K @ H) @ self.P
+        identity_matrix = np.eye(5)
+        self.P = (identity_matrix - K @ H) @ self.P
 
     def get_current_pose(self) -> np.ndarray:
         """Returns the fused [x, y, theta] from the state vector."""

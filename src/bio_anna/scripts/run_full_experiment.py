@@ -12,26 +12,25 @@ Description:
     Script to run a complete Bio ANNa experiment and collect all data needed for
 """
 
+from geometry_msgs.msg import PoseStamped
 import rclpy
 from rclpy.node import Node
 import subprocess
 import time
 import os
-import signal
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
 
-from geometry_msgs.msg import PoseStamped
+matplotlib.use('Agg')  # Use non-interactive backend
 
 
 class ExperimentController(Node):
     """
     Controller node to send navigation goals and manage the experiment.
     """
+
     def __init__(self):
         super().__init__('experiment_controller')
         self.goal_publisher = self.create_publisher(PoseStamped, '/goal_pose', 10)
@@ -39,17 +38,17 @@ class ExperimentController(Node):
         self.goal_count = 0
         self.max_goals = 5  # Number of goals to send
         self.get_logger().info('Experiment Controller initialized')
-        
+
     def send_goals(self):
         """Send a sequence of navigation goals to the robot."""
         if self.goal_count >= self.max_goals:
             return
-            
+
         # Create a goal pose
         goal = PoseStamped()
         goal.header.stamp = self.get_clock().now().to_msg()
         goal.header.frame_id = 'odom'
-        
+
         # Set different goals for each iteration
         goals = [
             (2.0, 1.0, 0.0),
@@ -58,19 +57,19 @@ class ExperimentController(Node):
             (1.0, 3.0, -1.57),
             (0.0, 0.0, 0.0)
         ]
-        
+
         if self.goal_count < len(goals):
             x, y, yaw = goals[self.goal_count]
             goal.pose.position.x = x
             goal.pose.position.y = y
             goal.pose.position.z = 0.0
-            
+
             # Convert yaw to quaternion (simplified)
             goal.pose.orientation.x = 0.0
             goal.pose.orientation.y = 0.0
             goal.pose.orientation.z = np.sin(yaw/2)
             goal.pose.orientation.w = np.cos(yaw/2)
-            
+
             self.goal_publisher.publish(goal)
             self.get_logger().info(f'Sent goal {self.goal_count+1}: x={x}, y={y}, yaw={yaw}')
             self.goal_count += 1
@@ -79,34 +78,34 @@ class ExperimentController(Node):
 def run_experiment():
     """Run the complete Bio ANNa experiment."""
     print("Starting Bio ANNa full experiment...")
-    
+
     # Source the ROS environment
     env = os.environ.copy()
     env['RMW_IMPLEMENTATION'] = 'rmw_fastrtps_cpp'
-    
+
     # Start the Bio ANNa system in background
     print("Launching Bio ANNa system...")
     system_process = subprocess.Popen([
         'ros2', 'launch', 'bio_anna', 'system.launch.py', 'use_sim_time:=true'
     ], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
+
     # Wait for system to initialize
     time.sleep(5)
-    
+
     # Start the data collection node
     print("Starting data collection node...")
     data_process = subprocess.Popen([
         'ros2', 'run', 'bio_anna', 'data_collection_node'
     ], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
+
     # Wait for nodes to initialize
     time.sleep(3)
-    
+
     # Initialize ROS and start the experiment controller
     print("Starting experiment controller...")
     rclpy.init()
     controller = ExperimentController()
-    
+
     try:
         # Run the experiment for 60 seconds
         start_time = time.time()
@@ -118,67 +117,67 @@ def run_experiment():
     finally:
         controller.destroy_node()
         rclpy.shutdown()
-    
+
     # Stop all processes
     print("Stopping experiment...")
     data_process.terminate()
     system_process.terminate()
-    
+
     # Wait for processes to finish
     data_process.wait(timeout=5)
     system_process.wait(timeout=5)
-    
+
     print("Experiment completed!")
 
 
 def generate_supplemental_materials():
     """Generate all requested supplemental materials from collected data."""
     print("Generating supplemental materials...")
-    
+
     # Create output directories
     figures_dir = 'figures'
     tables_dir = 'tables'
     os.makedirs(figures_dir, exist_ok=True)
     os.makedirs(tables_dir, exist_ok=True)
-    
+
     # Find the most recent data file
     data_files = []
     if os.path.exists('datasets/experiment_data'):
         for f in os.listdir('datasets/experiment_data'):
             if f.startswith('experiment_data_') and f.endswith('.csv'):
                 data_files.append(f)
-    
+
     if not data_files:
         print("No data files found!")
         return
-    
+
     # Get the most recent file
     data_files.sort()
     latest_file = data_files[-1]
     data_path = os.path.join('datasets/experiment_data', latest_file)
-    
+
     # Load the data
     print(f"Loading data from {data_path}")
     df = pd.read_csv(data_path)
-    
+
     # Generate Figure S1: PRISMA flow diagram (conceptual)
     generate_prisma_flow(figures_dir)
-    
+
     # Generate Figure S2: Photos of Robots (placeholder)
     generate_robot_photos(figures_dir)
-    
+
     # Generate Figure S3: Additional plots
     generate_additional_plots(df, figures_dir)
-    
+
     # Generate Table S1: Literature review summary (placeholder)
     generate_literature_table(tables_dir)
-    
+
     # Generate Table S2: Robot and Sensor Specs
     generate_specs_table(tables_dir)
-    
+
     # Generate CVC data table
     generate_cvc_table(df, tables_dir)
-    
+
     print("Supplemental materials generated successfully!")
 
 
@@ -224,10 +223,10 @@ Eligibility
 Included
 - Reports included in quantitative synthesis (meta-analysis): 121 records
     """
-    
+
     with open(os.path.join(figures_dir, 'Figure_S1_PRISMA.txt'), 'w') as f:
         f.write(prisma_content)
-    
+
     print("Generated Figure S1: PRISMA flow diagram")
 
 
@@ -256,10 +255,10 @@ D. Complete System Integration
    - Power consumption: 25W
    - Operating time: 4 hours (battery powered)
    """
-    
+
     with open(os.path.join(figures_dir, 'Figure_S2_Robot_Photos.txt'), 'w') as f:
         f.write(photo_content)
-    
+
     print("Generated Figure S2: Robot photos placeholder")
 
 
@@ -277,11 +276,11 @@ def generate_additional_plots(df, figures_dir):
     plt.grid(True)
     plt.savefig(os.path.join(figures_dir, 'Figure_S3A_Trajectory_Comparison.png'))
     plt.close()
-    
+
     # Plot 2: Pose estimation error over time
     error_x = np.abs(df['fused_x'] - df['gridcore_x'])
     error_y = np.abs(df['fused_y'] - df['gridcore_y'])
-    
+
     plt.figure(figsize=(10, 6))
     plt.plot(df['timestamp'], error_x, label='X Position Error', alpha=0.7)
     plt.plot(df['timestamp'], error_y, label='Y Position Error', alpha=0.7)
@@ -292,7 +291,7 @@ def generate_additional_plots(df, figures_dir):
     plt.grid(True)
     plt.savefig(os.path.join(figures_dir, 'Figure_S3B_Pose_Error.png'))
     plt.close()
-    
+
     # Plot 3: Velocity commands
     plt.figure(figsize=(10, 6))
     plt.plot(df['timestamp'], df['cmd_vel_linear'], label='Linear Velocity Command')
@@ -304,7 +303,7 @@ def generate_additional_plots(df, figures_dir):
     plt.grid(True)
     plt.savefig(os.path.join(figures_dir, 'Figure_S3C_Velocity_Commands.png'))
     plt.close()
-    
+
     print("Generated Figure S3: Additional plots")
 
 
@@ -352,7 +351,7 @@ def generate_literature_table(tables_dir):
             'Neuromorphic implementation framework'
         ]
     }
-    
+
     df = pd.DataFrame(literature_data)
     df.to_csv(os.path.join(tables_dir, 'Table_S1_Literature_Review.csv'), index=False)
     print("Generated Table S1: Literature review summary")
@@ -402,7 +401,7 @@ def generate_specs_table(tables_dir):
             'Precise distance measurement'
         ]
     }
-    
+
     df = pd.DataFrame(specs_data)
     df.to_csv(os.path.join(tables_dir, 'Table_S2_Robot_Sensor_Specs.csv'), index=False)
     print("Generated Table S2: Robot and sensor specifications")
@@ -412,21 +411,21 @@ def generate_cvc_table(df, tables_dir):
     """Generate CVC (Coefficient of Variation of the Coefficient) data table."""
     # Calculate CVC metrics from the data
     # For demonstration purposes, we'll compute some relevant statistics
-    
+
     # Calculate position errors
     position_error_x = np.abs(df['fused_x'] - df['gridcore_x'])
     position_error_y = np.abs(df['fused_y'] - df['gridcore_y'])
-    
+
     # Calculate mean and std for errors
     mean_error_x = np.mean(position_error_x)
     std_error_x = np.std(position_error_x)
     mean_error_y = np.mean(position_error_y)
     std_error_y = np.std(position_error_y)
-    
+
     # Calculate coefficient of variation (CV)
     cv_x = std_error_x / mean_error_x if mean_error_x > 0 else 0
     cv_y = std_error_y / mean_error_y if mean_error_y > 0 else 0
-    
+
     # Create CVC table
     cvc_data = {
         'Metric': [
@@ -460,7 +459,7 @@ def generate_cvc_table(df, tables_dir):
             'unitless'
         ]
     }
-    
+
     cvc_df = pd.DataFrame(cvc_data)
     cvc_df.to_csv(os.path.join(tables_dir, 'Table_CVC_Data.csv'), index=False)
     print("Generated CVC data table")
@@ -470,17 +469,16 @@ def main():
     """Main function to run the complete experiment and generate materials."""
     print("Bio ANNa Supplemental Materials Generator")
     print("=" * 40)
-    
+
     # Run the experiment
     run_experiment()
-    
+
     # Generate supplemental materials
     generate_supplemental_materials()
-    
+
     print("\nAll supplemental materials have been generated!")
     print("Files are located in the 'figures' and 'tables' directories.")
 
 
 if __name__ == '__main__':
     main()
-

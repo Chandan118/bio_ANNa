@@ -14,13 +14,7 @@ Description:
 
 # ===================================================================
 # Bio ANNa - Data Collection Node
-#
 # Date: Nov 24, 2025
-#
-# Description:
-# This node collects all the necessary data for generating the supplemental
-# materials (figures and tables) for the Bio ANNa project. It subscribes
-# to all relevant topics and saves the data to CSV files for later analysis.
 # ===================================================================
 
 import rclpy
@@ -30,7 +24,7 @@ import pandas as pd
 import os
 from datetime import datetime
 
-from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 
@@ -39,10 +33,11 @@ class DataCollectionNode(Node):
     """
     Node for collecting data from all relevant topics in the Bio ANNa system.
     """
+
     def __init__(self):
         super().__init__('data_collection_node')
         self.get_logger().info('Initializing Data Collection Node...')
-        
+
         # Create data storage
         self.data = {
             'timestamp': [],
@@ -52,32 +47,32 @@ class DataCollectionNode(Node):
             'cmd_vel_linear': [], 'cmd_vel_angular': [],
             'imu_angular_z': [], 'imu_linear_x': []
         }
-        
+
         # Setup subscribers
         self.antbot_odom_sub = self.create_subscription(
             Odometry, '/odom/antbot_snn', self.antbot_callback, 10)
-            
+
         self.fused_odom_sub = self.create_subscription(
             Odometry, '/odom/fused', self.fused_callback, 10)
-            
+
         self.gridcore_sub = self.create_subscription(
             PoseWithCovarianceStamped, '/pose_correction/gridcore', self.gridcore_callback, 10)
-            
+
         self.cmd_vel_sub = self.create_subscription(
             Twist, '/cmd_vel', self.cmd_vel_callback, 10)
-            
+
         self.imu_sub = self.create_subscription(
             Imu, '/imu/data', self.imu_callback, 10)
-        
+
         # Timer to save data periodically
         self.timer = self.create_timer(5.0, self.save_data)
         self.get_logger().info('Data Collection Node initialized.')
-        
+
     def extract_yaw(self, orientation):
         """Extract yaw from quaternion."""
         # Simplified extraction (in a real implementation, you'd use tf2 or similar)
         return 2 * np.arctan2(orientation.z, orientation.w)
-    
+
     def antbot_callback(self, msg):
         """Callback for AntBot odometry data."""
         timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
@@ -86,7 +81,7 @@ class DataCollectionNode(Node):
         self.data['antbot_y'].append(msg.pose.pose.position.y)
         yaw = self.extract_yaw(msg.pose.pose.orientation)
         self.data['antbot_theta'].append(yaw)
-        
+
     def fused_callback(self, msg):
         """Callback for fused odometry data."""
         # We don't append timestamp here since it's handled by other callbacks
@@ -94,7 +89,7 @@ class DataCollectionNode(Node):
         self.data['fused_y'].append(msg.pose.pose.position.y)
         yaw = self.extract_yaw(msg.pose.pose.orientation)
         self.data['fused_theta'].append(yaw)
-        
+
     def gridcore_callback(self, msg):
         """Callback for GridCore pose correction data."""
         # We don't append timestamp here since it's handled by other callbacks
@@ -102,34 +97,34 @@ class DataCollectionNode(Node):
         self.data['gridcore_y'].append(msg.pose.pose.position.y)
         yaw = self.extract_yaw(msg.pose.pose.orientation)
         self.data['gridcore_theta'].append(yaw)
-        
+
     def cmd_vel_callback(self, msg):
         """Callback for command velocity data."""
         # We don't append timestamp here since it's handled by other callbacks
         self.data['cmd_vel_linear'].append(msg.linear.x)
         self.data['cmd_vel_angular'].append(msg.angular.z)
-        
+
     def imu_callback(self, msg):
         """Callback for IMU data."""
         # We don't append timestamp here since it's handled by other callbacks
         self.data['imu_angular_z'].append(msg.angular_velocity.z)
         self.data['imu_linear_x'].append(msg.linear_acceleration.x)
-    
+
     def save_data(self):
         """Save collected data to CSV files."""
         # Convert to DataFrame
         df = pd.DataFrame(self.data)
-        
+
         # Create output directory if it doesn't exist
         output_dir = 'datasets/experiment_data'
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Save to CSV
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f'{output_dir}/experiment_data_{timestamp}.csv'
         df.to_csv(filename, index=False)
         self.get_logger().info(f'Data saved to {filename}')
-        
+
         # Also save a summary statistics file
         summary_filename = f'{output_dir}/summary_statistics_{timestamp}.csv'
         summary_stats = df.describe()
@@ -140,7 +135,7 @@ class DataCollectionNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = DataCollectionNode()
-    
+
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
